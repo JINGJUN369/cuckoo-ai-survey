@@ -23,7 +23,7 @@ const TOOL_MATCH = {
   DOC: { primary: "claude", secondary: "chatgpt", reason: "긴 보고서, 공문, 기안서 등 구조화된 문서 작성에 가장 강력" },
   DATA: { primary: "claude", secondary: "chatgpt", reason: "엑셀 분석, 수식 작성, 데이터 시각화까지 파일로 바로 생성 가능" },
   SEARCH: { primary: "perplexity", secondary: "claude", reason: "출처 기반 실시간 검색 + Claude로 검색 결과 정리/분석" },
-  CS: { primary: "claude", secondary: "chatgpt", reason: "상황별 톤 조절과 긴 스크립트 작성에 탁월" },
+  CS: { primary: "chatgpt", secondary: "claude", reason: "무료로 바로 사용 가능 + 다양한 톤의 응대 스크립트 생성에 강점" },
   COORD: { primary: "gemini", secondary: "claude", reason: "구글 캘린더/메일 연동 + Claude로 회의록/일정 문서 정리" },
 };
 
