@@ -30,41 +30,69 @@ const TOOL_MATCH = {
 const JOBS = ["설치관리", "수금관리", "서비스관리", "컨택센터", "PL관리", "사무관리"];
 
 const QUESTIONS = [
-  { id: "job", question: "담당하고 계신 주된 업무를 선택해 주세요", subtitle: "가장 가까운 항목을 선택하세요", options: JOBS.map(j => ({ text: j, scores: {} })), isInfo: true },
-  { id: "q1", question: "업무 중 가장 많은 시간을 차지하는 작업은?", subtitle: "하나만 선택해 주세요", options: [
-    { text: "보고서 / 공문 / 메일 작성", scores: { DOC: 3 } }, { text: "엑셀 데이터 정리 및 분석", scores: { DATA: 3 } },
-    { text: "자료 검색 및 정보 조사", scores: { SEARCH: 3 } }, { text: "고객 전화 / 채팅 응대", scores: { CS: 3 } },
-    { text: "일정 관리 및 업무 배분", scores: { COORD: 3 } },
+  { id: "job", question: "담당하고 계신 주된 업무를 선택해 주세요", subtitle: "가장 가까운 항목을 선택하세요", options: JOBS.map(j => ({ text: j, scores: {} })), isInfo: true, multi: false },
+  { id: "q1", question: "월요일 아침 출근해서 PC를 켜면 가장 먼저 하는 일은?", subtitle: "해당하는 것을 모두 선택하세요 (최대 2개)", multi: true, maxPick: 2, options: [
+    { text: "밀린 메일/메신저 확인하고 답변 작성", scores: { DOC: 2, COORD: 1 } },
+    { text: "주간 실적/현황 데이터 업데이트", scores: { DATA: 3 } },
+    { text: "지난주 이슈 관련 자료 검색/확인", scores: { SEARCH: 2, DOC: 1 } },
+    { text: "미처리 고객 문의/클레임 이어서 처리", scores: { CS: 3 } },
+    { text: "금주 일정 확인하고 업무 우선순위 정리", scores: { COORD: 3 } },
   ]},
-  { id: "q2", question: "하루 중 가장 자주 반복하는 작업은?", subtitle: "하나만 선택해 주세요", options: [
-    { text: "문서 수정 및 업데이트", scores: { DOC: 2, DATA: 1 } }, { text: "데이터 입력 및 수치 확인", scores: { DATA: 2, DOC: 1 } },
-    { text: "정보 확인 및 규정 검토", scores: { SEARCH: 2, DOC: 1 } }, { text: "고객 문의 대응 및 이력 관리", scores: { CS: 2, DATA: 1 } },
-    { text: "팀원 / 유관부서 소통 및 조율", scores: { COORD: 2, CS: 1 } },
+  { id: "q2", question: "지난 한 주를 돌아보면, 가장 많은 시간을 쓴 업무는?", subtitle: "해당하는 것을 모두 선택하세요 (최대 2개)", multi: true, maxPick: 2, options: [
+    { text: "보고서/공문/메일 등 문서 작성 및 수정", scores: { DOC: 3 } },
+    { text: "엑셀 데이터 입력, 정리, 수식 작업", scores: { DATA: 3 } },
+    { text: "규정/사례/자료 검색 및 정리", scores: { SEARCH: 3 } },
+    { text: "고객/협력업체 전화, 채팅, 메일 응대", scores: { CS: 3 } },
+    { text: "일정 조율, 회의, 유관부서 소통", scores: { COORD: 3 } },
   ]},
-  { id: "q3", question: "업무 중 가장 어려움을 느끼는 부분은?", subtitle: "하나만 선택해 주세요", options: [
-    { text: "깔끔한 문서 / 보고서 만들기", scores: { DOC: 2 } }, { text: "대량 데이터 처리 및 오류 확인", scores: { DATA: 2 } },
-    { text: "필요한 정보를 빠르게 찾기", scores: { SEARCH: 2 } }, { text: "고객 불만 대응 및 적절한 답변 작성", scores: { CS: 2 } },
-    { text: "여러 일정과 업무 우선순위 조율", scores: { COORD: 2 } },
+  { id: "q3", question: "ERP나 사내 시스템에서 주로 하는 작업은?", subtitle: "해당하는 것을 모두 선택하세요 (최대 2개)", multi: true, maxPick: 2, options: [
+    { text: "기안서/품의서 작성 및 결재 요청", scores: { DOC: 2, COORD: 1 } },
+    { text: "데이터 조회/추출 후 엑셀로 가공", scores: { DATA: 3 } },
+    { text: "이전 처리 이력/규정 검색 및 참조", scores: { SEARCH: 2, DATA: 1 } },
+    { text: "고객 정보 조회/상담 이력 입력", scores: { CS: 2, DATA: 1 } },
+    { text: "설치/서비스 일정 배정 및 변경", scores: { COORD: 2, DATA: 1 } },
   ]},
-  { id: "q4", question: "업무에서 가장 많이 사용하는 프로그램은?", subtitle: "하나만 선택해 주세요", options: [
-    { text: "워드 / 한글 / 파워포인트", scores: { DOC: 2 } }, { text: "엑셀 / 스프레드시트", scores: { DATA: 2 } },
-    { text: "인터넷 브라우저 / 사내 검색 시스템", scores: { SEARCH: 2 } }, { text: "전화 시스템 / 채팅 상담 프로그램", scores: { CS: 2 } },
-    { text: "메신저 / 이메일 / 캘린더", scores: { COORD: 2 } },
+  { id: "q4", question: "업무 중 갑자기 이런 요청이 들어왔습니다. 가장 익숙한 상황은?", subtitle: "하나만 선택해 주세요", multi: false, options: [
+    { text: "\"이 내용으로 오늘까지 보고서 정리해 줘\"", scores: { DOC: 3 } },
+    { text: "\"이 엑셀 데이터 틀린 부분 찾아서 수정해 줘\"", scores: { DATA: 3 } },
+    { text: "\"이 건 관련 규정이 뭔지 찾아봐 줘\"", scores: { SEARCH: 3 } },
+    { text: "\"고객이 화나서 전화했는데 좀 받아줘\"", scores: { CS: 3 } },
+    { text: "\"내일 회의 일정 잡고 참석자 조율해 줘\"", scores: { COORD: 3 } },
   ]},
-  { id: "q5", question: "상사에게 가장 자주 하는 보고 형태는?", subtitle: "하나만 선택해 주세요", options: [
-    { text: "문서 (보고서, 기안서, 공문)", scores: { DOC: 2, DATA: 1 } }, { text: "데이터 현황표 / 차트 / 통계", scores: { DATA: 2, DOC: 1 } },
-    { text: "조사 결과 / 정리 자료", scores: { SEARCH: 2, DOC: 1 } }, { text: "고객 응대 결과 / VOC 정리", scores: { CS: 2, DATA: 1 } },
-    { text: "업무 진행 현황 / 일정표", scores: { COORD: 2, DOC: 1 } },
+  { id: "q5", question: "업무 중 가장 스트레스 받는 순간은?", subtitle: "해당하는 것을 모두 선택하세요 (최대 2개)", multi: true, maxPick: 2, options: [
+    { text: "급하게 문서/보고서를 만들어야 할 때", scores: { DOC: 2 } },
+    { text: "데이터가 안 맞거나 수작업이 많을 때", scores: { DATA: 2 } },
+    { text: "필요한 정보/자료를 도저히 못 찾을 때", scores: { SEARCH: 2 } },
+    { text: "화난 고객을 응대하거나 민원 처리할 때", scores: { CS: 2 } },
+    { text: "여러 부서/사람 사이에서 조율이 안 될 때", scores: { COORD: 2 } },
   ]},
-  { id: "q6", question: "본인의 업무를 한마디로 표현하면?", subtitle: "가장 가깝다고 느끼는 것을 선택해 주세요", options: [
-    { text: "글을 쓰는 사람", scores: { DOC: 3 } }, { text: "숫자를 다루는 사람", scores: { DATA: 3 } },
-    { text: "정보를 찾는 사람", scores: { SEARCH: 3 } }, { text: "사람을 만나는 사람", scores: { CS: 3 } },
-    { text: "일을 연결하는 사람", scores: { COORD: 3 } },
+  { id: "q6", question: "동료가 \"이것 좀 도와줘\" 할 때, 주로 어떤 도움을 요청받나요?", subtitle: "하나만 선택해 주세요", multi: false, options: [
+    { text: "문서 작성이나 문구 다듬기", scores: { DOC: 2, CS: 1 } },
+    { text: "엑셀 수식이나 데이터 정리", scores: { DATA: 3 } },
+    { text: "관련 규정이나 자료 찾아주기", scores: { SEARCH: 2, DOC: 1 } },
+    { text: "고객 응대 방법이나 스크립트 조언", scores: { CS: 2, COORD: 1 } },
+    { text: "일정 조율이나 업무 분배 도움", scores: { COORD: 2, DOC: 1 } },
   ]},
-  { id: "q7", question: "AI가 도와줬으면 하는 업무는?", subtitle: "하나만 선택해 주세요", options: [
-    { text: "문서 초안 작성 / 교정 / 요약", scores: { DOC: 2 } }, { text: "데이터 분석 / 차트 생성 / 수식 작성", scores: { DATA: 2 } },
-    { text: "빠른 자료 검색 / 팩트 확인", scores: { SEARCH: 2 } }, { text: "고객 응대 스크립트 / 답변 작성", scores: { CS: 2 } },
-    { text: "업무 일정 정리 / 회의록 요약", scores: { COORD: 2 } },
+  { id: "q7", question: "퇴근 직전, 내일 해야 할 일을 정리합니다. 가장 많은 항목은?", subtitle: "하나만 선택해 주세요", multi: false, options: [
+    { text: "작성/수정해야 할 문서 목록", scores: { DOC: 2, DATA: 1 } },
+    { text: "확인/정리해야 할 데이터 작업", scores: { DATA: 2, DOC: 1 } },
+    { text: "확인해야 할 자료/검색할 내용", scores: { SEARCH: 2 } },
+    { text: "연락해야 할 고객/협력업체 리스트", scores: { CS: 2, COORD: 1 } },
+    { text: "잡아야 할 미팅/조율할 일정", scores: { COORD: 2, CS: 1 } },
+  ]},
+  { id: "q8", question: "이상적인 업무 도구가 있다면 어떤 기능이 가장 필요한가요?", subtitle: "해당하는 것을 모두 선택하세요 (최대 2개)", multi: true, maxPick: 2, options: [
+    { text: "문서 자동 작성 (보고서/공문/메일 초안)", scores: { DOC: 2 } },
+    { text: "데이터 자동 분석 및 오류 체크", scores: { DATA: 2 } },
+    { text: "원하는 정보를 정확히 찾아주는 검색", scores: { SEARCH: 2 } },
+    { text: "고객 응대 답변/스크립트 자동 생성", scores: { CS: 2 } },
+    { text: "일정 자동 관리 및 업무 배분", scores: { COORD: 2 } },
+  ]},
+  { id: "q9", question: "내 업무에서 AI가 가장 먼저 도와줬으면 하는 일은?", subtitle: "해당하는 것을 모두 선택하세요 (최대 2개)", multi: true, maxPick: 2, options: [
+    { text: "보고서/문서 초안 작성 및 교정", scores: { DOC: 2 } },
+    { text: "엑셀 데이터 분석, 차트 생성, 수식 작성", scores: { DATA: 2 } },
+    { text: "업무 관련 규정/사례/자료 빠른 검색", scores: { SEARCH: 2 } },
+    { text: "고객 응대 스크립트/답변 메시지 작성", scores: { CS: 2 } },
+    { text: "회의록 정리, 일정 관리, 업무 요약", scores: { COORD: 2 } },
   ]},
 ];
 
@@ -129,9 +157,22 @@ function NameInput({ onSubmit }) {
 function QuestionScreen({ question, index, total, onSelect }) {
   const [v, setV] = useState(false);
   const [sel, setSel] = useState(null);
-  useEffect(() => { setV(false); setSel(null); setTimeout(() => setV(true), 50); }, [index]);
+  const [multiSel, setMultiSel] = useState([]);
+  useEffect(() => { setV(false); setSel(null); setMultiSel([]); setTimeout(() => setV(true), 50); }, [index]);
   const pct = ((index + 1) / total) * 100;
-  const pick = (i) => { setSel(i); setTimeout(() => onSelect(i), 400); };
+  const isMulti = question.multi;
+  const maxPick = question.maxPick || 2;
+
+  const pickSingle = (i) => { setSel(i); setTimeout(() => onSelect([i]), 400); };
+  const toggleMulti = (i) => {
+    setMultiSel(prev => {
+      if (prev.includes(i)) return prev.filter(x => x !== i);
+      if (prev.length >= maxPick) return prev;
+      return [...prev, i];
+    });
+  };
+  const confirmMulti = () => { if (multiSel.length > 0) onSelect(multiSel); };
+
   return (
     <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", padding: "32px 20px", maxWidth: 520, margin: "0 auto", opacity: v ? 1 : 0, transform: v ? "translateY(0)" : "translateY(24px)", transition: "all 0.5s" }}>
       <div style={{ marginBottom: 32 }}>
@@ -145,15 +186,43 @@ function QuestionScreen({ question, index, total, onSelect }) {
       </div>
       <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
         <h2 style={{ fontFamily: FN, fontSize: "1.3rem", fontWeight: 700, color: "#F1F5F9", marginBottom: 6, lineHeight: 1.4 }}>{question.question}</h2>
-        <p style={{ color: "#64748B", fontSize: "0.85rem", marginBottom: 28 }}>{question.subtitle}</p>
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          {question.options.map((opt, i) => (
-            <button key={i} onClick={() => pick(i)}
-              style={{ background: sel === i ? "linear-gradient(135deg, #3B82F6, #6366F1)" : "rgba(30,41,59,0.8)", border: sel === i ? "2px solid #6366F1" : "2px solid #334155", borderRadius: 14, padding: "16px 20px", textAlign: "left", color: sel === i ? "#fff" : "#CBD5E1", fontSize: "0.95rem", fontFamily: FN, cursor: "pointer", transition: "all 0.25s", transform: sel === i ? "scale(1.02)" : "scale(1)" }}>
-              <span style={{ marginRight: 10, opacity: 0.5 }}>{String.fromCharCode(9312 + i)}</span>{opt.text}
-            </button>
-          ))}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 28 }}>
+          <p style={{ color: "#64748B", fontSize: "0.85rem", margin: 0 }}>{question.subtitle}</p>
+          {isMulti && <span style={{ background: "rgba(99,102,241,0.2)", color: "#A5B4FC", padding: "2px 8px", borderRadius: 8, fontSize: "0.7rem", fontWeight: 600, fontFamily: FN }}>복수선택</span>}
         </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {question.options.map((opt, i) => {
+            const isSelected = isMulti ? multiSel.includes(i) : sel === i;
+            const isDisabled = isMulti && !isSelected && multiSel.length >= maxPick;
+            return (
+              <button key={i} onClick={() => isMulti ? toggleMulti(i) : pickSingle(i)}
+                style={{
+                  background: isSelected ? "linear-gradient(135deg, #3B82F6, #6366F1)" : isDisabled ? "rgba(30,41,59,0.4)" : "rgba(30,41,59,0.8)",
+                  border: isSelected ? "2px solid #6366F1" : "2px solid #334155",
+                  borderRadius: 14, padding: "16px 20px", textAlign: "left",
+                  color: isSelected ? "#fff" : isDisabled ? "#475569" : "#CBD5E1",
+                  fontSize: "0.95rem", fontFamily: FN, cursor: isDisabled ? "default" : "pointer",
+                  transition: "all 0.25s", transform: isSelected ? "scale(1.02)" : "scale(1)",
+                  opacity: isDisabled ? 0.5 : 1,
+                }}>
+                <span style={{ marginRight: 10, opacity: 0.5 }}>
+                  {isMulti ? (isSelected ? "☑" : "☐") : String.fromCharCode(9312 + i)}
+                </span>{opt.text}
+              </button>
+            );
+          })}
+        </div>
+        {isMulti && (
+          <button onClick={confirmMulti} disabled={multiSel.length === 0}
+            style={{
+              marginTop: 16, background: multiSel.length > 0 ? "linear-gradient(135deg, #3B82F6, #8B5CF6)" : "#334155",
+              color: multiSel.length > 0 ? "#fff" : "#64748B", border: "none", borderRadius: 12,
+              padding: "14px", fontSize: "1rem", fontWeight: 600, fontFamily: FN,
+              cursor: multiSel.length > 0 ? "pointer" : "default", transition: "all 0.3s",
+            }}>
+            선택 완료 ({multiSel.length}/{maxPick}) →
+          </button>
+        )}
       </div>
     </div>
   );
@@ -646,14 +715,20 @@ export default function App() {
 
   useEffect(() => { loadParticipants(); }, [loadParticipants]);
 
-  const handleSelect = async (optIdx) => {
+  const handleSelect = async (selectedIndices) => {
     const q = QUESTIONS[currentQ];
     let newScores = { ...scores };
 
     if (q.isInfo) {
-      setJob(q.options[optIdx].text);
+      setJob(q.options[selectedIndices[0]].text);
     } else {
-      Object.entries(q.options[optIdx].scores).forEach(([k, v]) => { newScores[k] = (newScores[k] || 0) + v; });
+      selectedIndices.forEach((optIdx, rank) => {
+        const optScores = q.options[optIdx].scores;
+        const multiplier = rank === 0 ? 1 : 0.5;
+        Object.entries(optScores).forEach(([k, v]) => {
+          newScores[k] = (newScores[k] || 0) + Math.round(v * multiplier * 10) / 10;
+        });
+      });
       setScores(newScores);
     }
 
