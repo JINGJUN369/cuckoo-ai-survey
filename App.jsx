@@ -355,14 +355,123 @@ function ResultScreen({ name, job, scores, onDashboard, onRestart }) {
     ],
   };
 
-  // 이메일 답변 예시
-  const EMAIL_EXAMPLE = {
-    from: "협력업체 김과장",
-    subject: "2월 납품 일정 지연 관련",
-    body: "안녕하세요, 2월 예정된 필터 납품이 원자재 수급 문제로 1주일 지연될 예정입니다. 양해 부탁드립니다.",
-    prompt: "위 메일에 대한 답변을 작성해 줘.\n\n조건:\n- 정중하지만 일정 준수의 중요성을 강조\n- 대안 일정을 요청\n- 지연에 따른 영향을 명시\n- 향후 재발 방지 요청",
+  // 업무별 이메일 답변 예시
+  const EMAIL_EXAMPLES = {
+    "설치관리": { from: "고객 박지수", subject: "설치 일정 변경 요청", body: "안녕하세요, 3월 5일 예정된 정수기 설치를 3월 8일로 변경할 수 있을까요? 출장 일정이 잡혀서요.", prompt: "위 메일에 대한 답변을 작성해 줘.\n\n조건:\n- 일정 변경 가능 여부 확인\n- 변경 시 가능한 시간대 2~3개 제시\n- 설치 전 준비사항 안내\n- 친절하고 전문적인 톤" },
+    "수금관리": { from: "거래처 이과장", subject: "2월 렌탈료 납부 관련 문의", body: "안녕하세요, 2월 렌탈료 청구서를 받았는데 금액이 작년과 다릅니다. 확인 부탁드립니다.", prompt: "위 메일에 대한 답변을 작성해 줘.\n\n조건:\n- 요금 변동 사유 설명 (렌탈료 인상/부가서비스 추가 등)\n- 상세 내역 첨부 안내\n- 문의처 안내\n- 정중하면서도 명확한 톤" },
+    "서비스관리": { from: "서비스센터 김기사", subject: "CP-AM 모델 반복 누수 보고", body: "안녕하세요, 이번 주에만 CP-AM 모델 누수 건이 3건 접수되었습니다. 동일 부위(급수밸브)에서 발생하고 있어 품질 확인 요청드립니다.", prompt: "위 메일에 대한 답변을 작성해 줘.\n\n조건:\n- 보고 감사 인사\n- 해당 건 품질팀 전달 예정 알림\n- 추가 정보 요청 (로트번호, 사진 등)\n- 임시 조치 방법 안내" },
+    "컨택센터": { from: "VIP 고객 정회원", subject: "상담원 응대 불만", body: "오늘 전화 상담에서 상담원이 제 말을 끊고 일방적으로 안내만 했습니다. 10년 이용 고객인데 너무 실망스럽습니다.", prompt: "위 메일에 대한 답변을 작성해 줘.\n\n조건:\n- 진심 어린 사과\n- 해당 상담 건 확인 후 개선 약속\n- VIP 고객 감사 표현\n- 보상/혜택 안내 (적절한 수준으로)\n- 격식 있으면서 따뜻한 톤" },
+    "PL관리": { from: "품질팀 박팀장", subject: "CBT-QSF 소음 클레임 증가 관련", body: "최근 3개월간 CBT-QSF 모델의 소음 관련 클레임이 전년 대비 40% 증가했습니다. PL 리스크 평가 요청드립니다.", prompt: "위 메일에 대한 답변을 작성해 줘.\n\n조건:\n- 데이터 확인 및 분석 일정 회신\n- 필요 자료 요청 (클레임 상세, 로트 정보 등)\n- PL 리스크 등급 평가 프로세스 안내\n- 유관부서 회의 제안" },
+    "사무관리": { from: "협력업체 김과장", subject: "2월 납품 일정 지연 관련", body: "안녕하세요, 2월 예정된 필터 납품이 원자재 수급 문제로 1주일 지연될 예정입니다. 양해 부탁드립니다.", prompt: "위 메일에 대한 답변을 작성해 줘.\n\n조건:\n- 정중하지만 일정 준수의 중요성을 강조\n- 대안 일정을 요청\n- 지연에 따른 영향을 명시\n- 향후 재발 방지 요청" },
   };
 
+  // 업무별 ERP 데이터 검증 팁
+  const ERP_TIPS = {
+    "설치관리": [
+      { icon: "📍", title: "설치 주소 정합성 체크", prompt: "이 설치 데이터에서 주소가 비어있거나 형식이 이상한 건을 찾아줘" },
+      { icon: "⏱", title: "설치 소요시간 이상값 탐지", prompt: "설치 소요시간이 2시간 이상이거나 0인 비정상 건을 찾아줘" },
+      { icon: "🔁", title: "중복 설치 예약 확인", prompt: "동일 주소에 같은 날짜로 중복 예약된 건이 있는지 확인해 줘" },
+      { icon: "📦", title: "제품코드-모델명 매칭 확인", prompt: "제품코드와 모델명이 일치하지 않는 건을 찾아줘" },
+    ],
+    "수금관리": [
+      { icon: "💰", title: "입금액-청구액 불일치 확인", prompt: "입금 금액과 청구 금액이 다른 건, 부분 입금 건을 모두 찾아줘" },
+      { icon: "🔁", title: "중복 입금 탐지", prompt: "동일 고객번호로 같은 날짜에 중복 입금된 건이 있는지 확인해 줘" },
+      { icon: "📅", title: "미수금 기간 분석", prompt: "미수금을 30일/60일/90일/180일 이상으로 구분해서 건수와 금액을 정리해 줘" },
+      { icon: "⚠️", title: "계약 해지 후 청구 체크", prompt: "계약 해지일 이후에 청구가 발생한 비정상 건을 찾아줘" },
+    ],
+    "서비스관리": [
+      { icon: "🔧", title: "부품코드 유효성 확인", prompt: "사용된 부품코드가 해당 제품 모델의 호환 부품인지 확인해 줘" },
+      { icon: "⏱", title: "처리시간 이상값 분석", prompt: "서비스 접수 후 처리까지 7일 이상 걸린 건을 찾고 원인을 분류해 줘" },
+      { icon: "🔁", title: "재접수 건 분석", prompt: "동일 고객이 같은 증상으로 30일 내 재접수한 건을 찾아줘" },
+      { icon: "📊", title: "기사별 처리 효율 비교", prompt: "기사별 평균 처리시간, 재방문율, 고객 만족도를 비교 분석해 줘" },
+    ],
+    "컨택센터": [
+      { icon: "📞", title: "미처리 콜 확인", prompt: "접수 후 24시간 이상 미처리 상태인 건을 긴급도 순으로 정리해 줘" },
+      { icon: "🔁", title: "재문의 고객 분석", prompt: "같은 건으로 3회 이상 재문의한 고객을 찾고 미해결 이유를 분류해 줘" },
+      { icon: "📊", title: "시간대별 인입량 분석", prompt: "시간대별 콜 인입량과 평균 대기시간을 분석해서 피크 시간을 알려줘" },
+      { icon: "⭐", title: "상담 품질 점수 분석", prompt: "상담 만족도 3점 이하인 건을 추출하고 불만 유형을 분류해 줘" },
+    ],
+    "PL관리": [
+      { icon: "📈", title: "클레임 추이 이상 감지", prompt: "특정 모델의 클레임이 전월 대비 30% 이상 증가한 항목을 찾아줘" },
+      { icon: "🏭", title: "로트별 불량률 분석", prompt: "생산 로트별 불량률을 계산하고 기준치(0.5%)를 초과한 로트를 알려줘" },
+      { icon: "🔍", title: "동일 부위 반복 하자 탐지", prompt: "같은 모델의 같은 부위에서 3건 이상 발생한 하자 패턴을 찾아줘" },
+      { icon: "📋", title: "보증기간 내/외 구분", prompt: "클레임 데이터를 보증기간 내/외로 구분하고 각 비율과 처리 방법을 정리해 줘" },
+    ],
+    "사무관리": [
+      { icon: "🔢", title: "경비 데이터 정합성", prompt: "이 경비 데이터에서 금액 합계가 맞지 않는 행, 날짜 오류, 빈 셀을 찾아줘" },
+      { icon: "🔁", title: "중복 처리 탐지", prompt: "동일 건명으로 중복 기안/결재된 건이 있는지 확인해 줘" },
+      { icon: "📊", title: "예산 집행률 분석", prompt: "부서별 예산 대비 집행률을 계산하고 초과/미달 항목을 정리해 줘" },
+      { icon: "✅", title: "필수 항목 누락 체크", prompt: "이 데이터에서 필수 입력 항목(담당자, 일자, 금액)이 누락된 건을 찾아줘" },
+    ],
+  };
+
+  // 업무별 나만의 도구 MVP 추천
+  const MVP_TOOLS = {
+    "설치관리": [
+      { title: "📍 설치 일정 배분 도구", desc: "기사별 지역/시간대를 고려한 일정 자동 배분", prompt: "설치 기사 이름, 담당 지역, 하루 가능 건수를 입력하면 설치 예정 건을 자동 배분해주는 HTML 도구를 만들어 줘" },
+      { title: "✅ 설치 완료 체크리스트", desc: "현장에서 설치 후 점검 항목을 체크하는 모바일 폼", prompt: "정수기 설치 후 확인할 항목 15개(배관 연결, 누수 확인, 수질 테스트 등)를 체크하는 모바일 웹 체크리스트를 만들어 줘" },
+      { title: "📊 설치 현황 대시보드", desc: "일별/기사별 설치 건수를 한눈에 보는 현황판", prompt: "날짜, 기사명, 설치 건수 데이터를 붙여넣으면 기사별/일별 차트를 보여주는 대시보드 HTML을 만들어 줘" },
+    ],
+    "수금관리": [
+      { title: "💰 미수금 관리 대시보드", desc: "기간별/금액대별 미수금 현황을 시각화", prompt: "고객명, 미납금액, 미납일수 데이터를 붙여넣으면 30/60/90/180일 구간별로 분류하고 차트를 보여주는 HTML을 만들어 줘" },
+      { title: "📱 독촉 문자 생성기", desc: "고객명과 금액을 넣으면 단계별 독촉 문자 자동 생성", prompt: "고객명과 미납금액을 입력하면 1단계(안내), 2단계(독촉), 3단계(최종통보) 문자를 자동 생성하는 웹 도구를 만들어 줘" },
+      { title: "📋 수금 실적 입력 폼", desc: "매일 수금 실적을 간편하게 입력하고 누적 집계", prompt: "날짜, 고객명, 수금액, 수금방법을 입력하면 일별/월별 누적 합계를 자동 계산하는 입력 폼을 만들어 줘" },
+    ],
+    "서비스관리": [
+      { title: "🔧 서비스 접수 분류기", desc: "증상을 입력하면 서비스 유형/긴급도를 자동 분류", prompt: "고객이 설명한 증상을 입력하면 서비스 유형(필터/부품/세척/점검)과 긴급도(상/중/하)를 분류해주는 웹 도구를 만들어 줘" },
+      { title: "📦 부품 재고 추적기", desc: "부품 사용량 입력하면 재고 현황과 발주 필요량 계산", prompt: "부품명, 현재 재고, 일평균 사용량을 입력하면 예상 소진일과 발주 필요 시점을 알려주는 HTML 도구를 만들어 줘" },
+      { title: "⭐ 서비스 만족도 집계기", desc: "만족도 점수를 입력하면 통계와 추이를 시각화", prompt: "날짜, 기사명, 만족도 점수(1~5)를 입력하면 기사별 평균, 전체 추이 차트를 보여주는 대시보드를 만들어 줘" },
+    ],
+    "컨택센터": [
+      { title: "📞 상담 유형 분류기", desc: "상담 내용을 붙여넣으면 유형을 자동 태깅", prompt: "고객 상담 내용을 붙여넣으면 문의 유형(제품불만/배송/요금/해지/기타)을 자동 분류해주는 웹 도구를 만들어 줘" },
+      { title: "📝 응대 스크립트 생성기", desc: "상황과 고객 감정을 선택하면 맞춤 스크립트 생성", prompt: "상황(제품불량/배송지연/요금문의), 고객감정(보통/불만/격앙)을 선택하면 맞춤 응대 스크립트를 생성하는 웹 도구를 만들어 줘" },
+      { title: "📊 일일 상담 현황판", desc: "시간대별 인입량과 처리 현황을 실시간 표시", prompt: "시간대, 인입건수, 처리건수, 대기건수를 입력하면 시간대별 차트와 처리율을 보여주는 대시보드를 만들어 줘" },
+    ],
+    "PL관리": [
+      { title: "📈 클레임 추이 모니터", desc: "모델별 클레임 건수 추이를 차트로 시각화", prompt: "월, 모델명, 클레임 건수 데이터를 붙여넣으면 모델별 추이 차트와 전월 대비 증감을 보여주는 대시보드를 만들어 줘" },
+      { title: "⚠️ PL 리스크 평가 도구", desc: "발생빈도, 심각도를 입력하면 리스크 등급 자동 산출", prompt: "클레임 유형, 발생건수, 심각도(1~5)를 입력하면 리스크 매트릭스로 시각화하고 등급(상/중/하)을 매기는 도구를 만들어 줘" },
+      { title: "📋 하자 패턴 분석기", desc: "클레임 데이터를 붙여넣으면 반복 패턴을 자동 탐지", prompt: "제품모델, 하자부위, 발생일 데이터를 붙여넣으면 동일 모델-부위 조합별 건수를 집계하고 상위 패턴을 알려주는 도구를 만들어 줘" },
+    ],
+    "사무관리": [
+      { title: "📒 협력업체 주소록 검색기", desc: "ERP에 없는 업체 정보를 정리하고 검색", prompt: "협력업체 이름, 담당자, 연락처, 이메일을 입력하고 검색할 수 있는 HTML 페이지를 만들어 줘" },
+      { title: "📊 일일 실적 입력 폼", desc: "매일 반복되는 실적 데이터를 쉽게 입력", prompt: "날짜, 지역, 건수, 금액을 입력하면 표로 정리해주는 HTML 도구를 만들어 줘" },
+      { title: "📋 업무 요청 관리 보드", desc: "부서별 업무 요청을 접수/진행/완료로 관리", prompt: "요청자, 내용, 긴급도를 입력하면 접수→진행→완료 칸반보드로 관리하는 웹 도구를 만들어 줘" },
+    ],
+  };
+
+  // 업무유형별 미션
+  const MISSIONS = {
+    DOC: [
+      { level: "초급", color: "#10B981", badge: "🌱", mission: "AI에게 \"오늘 팀 회의 안건을 3개 정리해 줘\"라고 요청해 보기" },
+      { level: "중급", color: "#F59E0B", badge: "🌿", mission: "실제로 작성해야 할 메일이나 공문 초안을 AI에게 요청해 보기" },
+      { level: "고급", color: "#EF4444", badge: "🌳", mission: "기존에 작성한 보고서를 AI에게 주고 \"개선점을 알려줘\"라고 요청해 보기" },
+    ],
+    DATA: [
+      { level: "초급", color: "#10B981", badge: "🌱", mission: "AI에게 \"VLOOKUP과 INDEX MATCH의 차이를 알려줘\"라고 물어보기" },
+      { level: "중급", color: "#F59E0B", badge: "🌿", mission: "실제 엑셀 데이터(비식별)를 AI에 붙여넣고 \"요약 정리해 줘\"라고 요청해 보기" },
+      { level: "고급", color: "#EF4444", badge: "🌳", mission: "ERP에서 뽑은 데이터의 오류를 AI로 찾아보고, 결과를 실제 업무에 적용해 보기" },
+    ],
+    SEARCH: [
+      { level: "초급", color: "#10B981", badge: "🌱", mission: "Perplexity에서 \"정수기 필터 교체 주기 권장 기준\"을 검색해 보기" },
+      { level: "중급", color: "#F59E0B", badge: "🌿", mission: "업무 중 확인이 필요한 규정이나 기준을 AI로 검색하고 출처를 확인해 보기" },
+      { level: "고급", color: "#EF4444", badge: "🌳", mission: "경쟁사 정책을 AI로 비교 조사하고 표로 정리해 달라고 요청해 보기" },
+    ],
+    CS: [
+      { level: "초급", color: "#10B981", badge: "🌱", mission: "AI에게 \"화난 고객을 진정시키는 3가지 방법\"을 물어보기" },
+      { level: "중급", color: "#F59E0B", badge: "🌿", mission: "실제 고객 클레임 상황을 AI에게 설명하고 응대 스크립트를 받아보기" },
+      { level: "고급", color: "#EF4444", badge: "🌳", mission: "일주일간의 VOC 내용을 AI에 넣고 유형별 분류 + 개선 제안을 받아보기" },
+    ],
+    COORD: [
+      { level: "초급", color: "#10B981", badge: "🌱", mission: "AI에게 \"이번 주 할 일 5개를 우선순위로 정리해 줘\"라고 요청해 보기" },
+      { level: "중급", color: "#F59E0B", badge: "🌿", mission: "최근 회의 내용을 메모 형태로 AI에 넣고 회의록으로 정리해 달라고 해보기" },
+      { level: "고급", color: "#EF4444", badge: "🌳", mission: "프로젝트 업무를 AI에게 주고 담당자별 역할 분배 + 일정표를 만들어 보기" },
+    ],
+  };
+
+  const EMAIL_EXAMPLE = EMAIL_EXAMPLES[job] || EMAIL_EXAMPLES["사무관리"];
+  const erpTips = ERP_TIPS[job] || ERP_TIPS["사무관리"];
+  const mvpTools = MVP_TOOLS[job] || MVP_TOOLS["사무관리"];
+  const missions = MISSIONS[topType] || MISSIONS["DOC"];
   const jobPrompts = JOB_PROMPTS[job]?.[topType] || JOB_PROMPTS["사무관리"][topType] || [];
   const workflow = WORKFLOWS[job] || WORKFLOWS["사무관리"];
 
@@ -504,14 +613,9 @@ function ResultScreen({ name, job, scores, onDashboard, onRestart }) {
 
       {/* ===== 7. ERP 데이터 검증 팁 ===== */}
       <div style={{ ...sectionStyle(6), background: cardBg, borderRadius: 16, padding: 20, border: cardBorder }}>
-        <h4 style={{ fontFamily: FN, fontWeight: 700, color: "#F1F5F9", fontSize: "0.9rem", marginBottom: 14 }}>🔍 ERP 데이터 AI 검증 활용법</h4>
+        <h4 style={{ fontFamily: FN, fontWeight: 700, color: "#F1F5F9", fontSize: "0.9rem", marginBottom: 14 }}>🔍 {job} ERP 데이터 AI 검증 활용법</h4>
         <p style={{ color: "#94A3B8", fontSize: "0.82rem", lineHeight: 1.6, fontFamily: FN, marginBottom: 12 }}>ERP에서 추출한 엑셀 데이터를 AI에 업로드하면 사람이 놓치는 오류를 빠르게 찾아줍니다.</p>
-        {[
-          { icon: "🔢", title: "데이터 정합성 체크", prompt: "이 데이터에서 금액 합계가 맞지 않는 행, 날짜 형식 오류, 빈 셀을 찾아줘" },
-          { icon: "🔁", title: "중복 데이터 탐지", prompt: "이 엑셀에서 동일한 고객번호로 중복 입력된 건이 있는지 확인해 줘" },
-          { icon: "📈", title: "이상값 탐지", prompt: "이 데이터에서 평균에서 크게 벗어나는 이상값을 찾고 원인을 추정해 줘" },
-          { icon: "✅", title: "규칙 준수 확인", prompt: "이 입력 데이터가 [규칙: 금액은 양수, 날짜는 이번 달]을 만족하는지 체크해 줘" },
-        ].map((item, i) => (
+        {erpTips.map((item, i) => (
           <div key={i} style={{ display: "flex", gap: 10, marginBottom: 10, alignItems: "flex-start" }}>
             <span style={{ fontSize: "1rem", marginTop: 2 }}>{item.icon}</span>
             <div>
@@ -524,13 +628,9 @@ function ResultScreen({ name, job, scores, onDashboard, onRestart }) {
 
       {/* ===== 8. 나만의 도구 만들기 ===== */}
       <div style={{ ...sectionStyle(7), background: "linear-gradient(135deg, rgba(245,158,11,0.1), rgba(239,68,68,0.05))", borderRadius: 16, padding: 20, border: "1px solid rgba(245,158,11,0.2)" }}>
-        <h4 style={{ fontFamily: FN, fontWeight: 700, color: "#FCD34D", fontSize: "0.9rem", marginBottom: 6 }}>🛠 나만의 업무 도구, AI로 만들 수 있습니다</h4>
+        <h4 style={{ fontFamily: FN, fontWeight: 700, color: "#FCD34D", fontSize: "0.9rem", marginBottom: 6 }}>🛠 {job} 맞춤 업무 도구, AI로 만들 수 있습니다</h4>
         <p style={{ color: "#94A3B8", fontSize: "0.8rem", lineHeight: 1.6, fontFamily: FN, marginBottom: 14 }}>코딩을 몰라도 AI에게 설명만 하면 간단한 업무 도구를 만들어줍니다.</p>
-        {[
-          { title: "📒 협력업체 주소록 검색기", desc: "ERP에 없는 업체 정보를 정리하고 검색할 수 있는 웹 도구", prompt: "협력업체 이름, 담당자, 연락처, 이메일을 입력하고 검색할 수 있는 HTML 페이지를 만들어 줘" },
-          { title: "📊 일일 실적 입력 폼", desc: "매일 반복되는 실적 데이터를 쉽게 입력하는 웹 폼", prompt: "날짜, 지역, 건수, 금액을 입력하면 표로 정리해주는 HTML 도구를 만들어 줘" },
-          { title: "📋 체크리스트 생성기", desc: "설치/서비스 작업 시 빠뜨리지 않도록 체크리스트 자동 생성", prompt: "정수기 설치 시 확인해야 할 항목을 체크리스트 웹페이지로 만들어 줘. 체크하면 색이 바뀌게" },
-        ].map((item, i) => (
+        {mvpTools.map((item, i) => (
           <div key={i} style={{ background: "rgba(15,23,42,0.5)", borderRadius: 10, padding: 14, marginBottom: 8, border: "1px solid #334155" }}>
             <div style={{ color: "#FCD34D", fontSize: "0.82rem", fontWeight: 600, fontFamily: FN, marginBottom: 2 }}>{item.title}</div>
             <div style={{ color: "#94A3B8", fontSize: "0.76rem", fontFamily: FN, marginBottom: 6 }}>{item.desc}</div>
@@ -558,12 +658,8 @@ function ResultScreen({ name, job, scores, onDashboard, onRestart }) {
 
       {/* ===== 10. 오늘의 미션 ===== */}
       <div style={{ ...sectionStyle(8), background: cardBg, borderRadius: 16, padding: 20, border: cardBorder }}>
-        <h4 style={{ fontFamily: FN, fontWeight: 700, color: "#F1F5F9", fontSize: "0.9rem", marginBottom: 14 }}>🎯 오늘의 미션</h4>
-        {[
-          { level: "초급", color: "#10B981", mission: "추천받은 AI 도구에 접속해서 \"안녕, 너는 어떤 AI야?\"라고 물어보기", badge: "🌱" },
-          { level: "중급", color: "#F59E0B", mission: "오늘 할 일 3가지를 AI에게 주고 우선순위를 정해달라고 하기", badge: "🌿" },
-          { level: "고급", color: "#EF4444", mission: "실제 업무 데이터(비식별)를 AI에 넣어 분석 or 보고서 초안 받아보기", badge: "🌳" },
-        ].map((m, i) => (
+        <h4 style={{ fontFamily: FN, fontWeight: 700, color: "#F1F5F9", fontSize: "0.9rem", marginBottom: 14 }}>🎯 {TYPES[topType].label} 맞춤 오늘의 미션</h4>
+        {missions.map((m, i) => (
           <div key={i} style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 10, background: `${m.color}10`, borderRadius: 10, padding: "12px 14px", border: `1px solid ${m.color}30` }}>
             <span style={{ fontSize: "1.5rem" }}>{m.badge}</span>
             <div>
